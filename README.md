@@ -110,8 +110,8 @@ ruby bin/mvclient.rb get_balance
 ```
 example output
 ```
-You can give $6.95
-You can spend $41.00
+You can give $7.00
+You can spend $21.00
 ```
 
 ### Send appreciation
