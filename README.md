@@ -86,7 +86,8 @@ returns balance information
 @client.feed(:team, page_no) # 0-based
 ```
 
-## command-line tool <a id="command-line-tool"></a>
+<a id="command-line-tool"></a>
+## command-line tool
 
 A command-line tool is also provided in `bin/mvclient.rb`.  Use `--help` to receive usage information on the command line.
 
