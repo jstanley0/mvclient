@@ -1,7 +1,7 @@
 # mvclient
 
 This is a minimal client wrapper for the (not yet published!) Motivosity API. It allows you to check balances,
-send money, and retrieve the announcements and news feed. A limited command-line tool is also provided.
+send money, and retrieve the announcements and news feed. A limited [command-line tool](#command-line-tool) is also provided.
 
 ## client library
 
@@ -86,7 +86,7 @@ returns balance information
 @client.feed(:team, page_no) # 0-based
 ```
 
-## command-line tool
+## command-line tool <a id="command-line-tool"></a>
 
 A command-line tool is also provided in `bin/mvclient.rb`.  Use `--help` to receive usage information on the command line.
 
