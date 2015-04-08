@@ -1,6 +1,8 @@
 require 'optparse'
 require_relative '../mvclient'
 
+USER_ID_REGEX = /\A\h{8}-\h{4}-user-\h{4}-\h{12}\z/
+
 $options = {}
 
 def money_str(value)
@@ -76,7 +78,7 @@ COMMANDS = {
 
     result = $client.search_for_user($options[:search], !!$options[:ignore_self])
     result.each do |name|
-      puts name["fullName"]
+      puts "#{name["id"]} #{name["fullName"]}"
     end
     nil
   },
@@ -84,9 +86,10 @@ COMMANDS = {
   send_appreciation: -> {
     get_options do |opts|
       opts.banner = "send_appreciation: Send appreciation (and optionally a cash bonus) to another user"
-      opts.on("-uUSER", "--user=USER", "Name of user to send thanks to") do |user|
+      opts.on("-uUSER", "--user=USER", "Name or ID of user to send thanks to") do |user|
         $options[:user] = user
       end
+
       opts.on("-aAMOUNT", "--amount=AMOUNT", "Amount to send") do |amount|
         $options[:amount] = amount
       end
@@ -103,32 +106,41 @@ COMMANDS = {
     require_options(:user)
 
     # find value, if given
-    value = nil
+    value_id = nil
     if $options[:value]
       values = $client.get_values
       value = values.detect { |value| value['name'] == $options[:value] }
-      puts "Warning: No company value matches '#{$options[:value]}'" unless value
+      if value
+        value_id = value['id']
+      else
+        puts "Warning: No company value matches '#{$options[:value]}'"
+      end
     end
 
     # find user
-    users = $client.search_for_user($options[:user])
-    if users.empty?
-      puts "User '#{$options[:user]}' not found"
-      exit(1)
-    elsif users.size > 1
-      # check for an exact match among the search results
-      matching_users = users.select { |user| user['fullName'] == $options[:user] }
-      if matching_users.size > 1
-        puts "Multiple users match '#{$options[:user]}'; please be more specific."
-        puts "Try one of #{users.map{|user| "'#{user['fullName']}'"}.join(', ')}"
+    user_id = nil
+    if $options[:user] =~ USER_ID_REGEX
+      user_id = $options[:user]
+    else
+      users = $client.search_for_user($options[:user])
+      if users.empty?
+        puts "User '#{$options[:user]}' not found"
         exit(1)
-      else
-        users = matching_users
+      elsif users.size > 1
+        # check for an exact match among the search results
+        matching_users = users.select { |user| user['fullName'] == $options[:user] }
+        if matching_users.size > 1
+          puts "Multiple users match '#{$options[:user]}'; please be more specific."
+          puts "Try one of #{users.map{|user| "'#{user['fullName']}'"}.join(', ')}"
+          exit(1)
+        else
+          users = matching_users
+        end
       end
+      user_id = users[0]['id']
     end
-    user = users[0]
 
-    response = $client.send_appreciation! user, $options[:amount] || 0, $options[:note] || "", value, !!$options[:private]
+    response = $client.send_appreciation! user_id, $options[:amount] || 0, $options[:note] || "", value_id, !!$options[:private]
     puts response['growl']['title'] + " " + response['growl']['content']
   }
 }

@@ -28,12 +28,7 @@ module Motivosity
           }
       })
       raise UnauthorizedError.new("invalid username or password") unless response.code == 302
-      split_cookie_headers(response.headers['Set-Cookie']).each do |cookie_string|
-        @cookies.parse(cookie_string, "https://www.motivosity.com/") do |cookie|
-          cookie.max_age ||= 604800 if cookie.name == 'JSESSIONID' # force the gem to persist the session key (for one week)
-          cookie
-        end
-      end
+      process_response_headers(response)
     end
 
     def logout!
@@ -42,6 +37,15 @@ module Motivosity
 
     def auth_headers
       { "Cookie" => HTTP::Cookie.cookie_value(@cookies.cookies) }
+    end
+
+    def process_response_headers(response)
+      split_cookie_headers(response.headers['Set-Cookie']).each do |cookie_string|
+        @cookies.parse(cookie_string, "https://www.motivosity.com/") do |cookie|
+          cookie.max_age ||= 604800 if cookie.name == 'JSESSIONID' # force the gem to persist the session key (for one week)
+          cookie
+        end
+      end
     end
 
     private

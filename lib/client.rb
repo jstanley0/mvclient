@@ -48,15 +48,14 @@ module Motivosity
 
     # sends appreciation to another User
     # raises BalanceError if insufficient funds exist
-    def send_appreciation!(toUser, amount, note, company_value = nil, private = false)
+    def send_appreciation!(toUser_id, amount, note, company_value_id = nil, private = false)
       options = {}
-      options["companyValueID"] = company_value['id'] if company_value
+      options["companyValueID"] = company_value_id if company_value_id
       options["amount"] = amount.to_s
       options["note"] = note
       options["privateAppreciation"] = private
-      options["toUserID"] = toUser['id']
-      options["toUserName"] = toUser['fullName']
-      put "/api/v1/user/#{toUser['id']}/appreciation", {}, options
+      options["toUserID"] = toUser_id
+      put "/api/v1/user/#{toUser_id}/appreciation", {}, options
     end
 
     # returns recent announcements
@@ -103,6 +102,7 @@ module Motivosity
     end
 
     def process_response(response)
+      @auth.process_response_headers(response) if response.headers['Set-Cookie']
       response_body = JSON.parse(response.body)
       if response.code != 200
         error = case response.code

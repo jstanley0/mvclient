@@ -70,8 +70,7 @@ returns balance information
 ### Send appreciation
 
 ```ruby
-# user returned from search_for_user; value returned from get_values
-@client.send_appreciation! user, 1.00, "Here, have a dollar", value
+@client.send_appreciation! user_id, 1.00, "Here, have a dollar", value_id
 ```
 
 ### Get announcements
