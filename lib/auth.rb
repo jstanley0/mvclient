@@ -1,6 +1,7 @@
 require 'json'
 require 'httparty'
 require 'fileutils'
+require 'http-cookie'
 require_relative 'error'
 
 module Motivosity
@@ -8,14 +9,18 @@ module Motivosity
     include HTTParty
     base_uri 'https://www.motivosity.com'
     follow_redirects false
+    debug_output $stderr if ENV['MOTIVOSITY_DEBUG'].to_i == 1
 
-    def initialize(user, password)
-      return if check_saved_session
-      raise UnauthorizedError.new("no username given") unless user && user.length > 0
+    def initialize
+      @cookies = HTTP::CookieJar.new(store: :mozilla, filename: File.expand_path("~/.motivosity-session"))
+    end
+
+    def login!(username, password)
+      @cookies.clear
       response = self.class.post('/login.xhtml', {
           body: {
               "loginForm" => 'loginForm',
-              "email" => user,
+              "email" => username,
               "j_password" => password,
               "rememberMe" => 'on',
               "signInLink" => 'Sign In',
@@ -23,55 +28,28 @@ module Motivosity
           }
       })
       raise UnauthorizedError.new("invalid username or password") unless response.code == 302
-      parse_cookies(response.headers['Set-Cookie'])
-      save_session
+      split_cookie_headers(response.headers['Set-Cookie']).each do |cookie_string|
+        @cookies.parse(cookie_string, "https://www.motivosity.com/") do |cookie|
+          cookie.max_age ||= 604800 if cookie.name == 'JSESSIONID' # force the gem to persist the session key (for one week)
+          cookie
+        end
+      end
     end
 
-    def login_by_json!(json_file)
-      creds = JSON.parse(File.read(json_file))
-      login!(creds['email'], creds['password'])
+    def logout!
+      @cookies.clear
     end
 
     def auth_headers
-      { "Cookie" => @cookies.map { |k, v| "#{k}=#{v}" }.join("; ") }
+      { "Cookie" => HTTP::Cookie.cookie_value(@cookies.cookies) }
     end
 
-  private
-    def parse_cookies(headers)
-      @cookies = {}
-      # stupid HTTParty joins multiple Set-Cookie headers with ", ", which is ambiguous due to dates
-      # so just filter out the days of the week ("Mon, ") so we can separate the cookies
-      headers.gsub(/(Mon|Tue|Wed|Thu|Fri|Sat|Sun), /, '').split(', ').each do |cookie_header|
-        cookie_values = cookie_header.split("; ")
-        next unless cookie_values.length >= 1
-        key, value = cookie_values[0].split('=')
-        @cookies[key] = value
-      end
-    end
+    private
 
-    def save_session
-      File.write(session_file, @cookies.to_json)
-    end
-
-    def check_saved_session
-      return false unless File.exists?(session_file)
-      @cookies = JSON.parse(File.read(session_file))
-      # if the session file is over an hour old, test the stored auth and touch or delete the file
-      if ((Time.now - File.mtime(session_file)) > 3600)
-        response = self.class.get '/api/v1/usercash', { headers: auth_headers }
-        if response.code == 200
-          FileUtils.touch session_file
-          return true
-        else
-          File.unlink session_file
-          return false
-        end
-      end
-      true
-    end
-
-    def session_file
-      @session_file ||= File.expand_path("~/.mvclient-session")
+    # this is only necessary because HTTParty is stupid and it combines Set-Cookie headers into a single
+    # comma-separated string which can't be naively split because there are commas in expiration dates
+    def split_cookie_headers(stupidly_joined_headers)
+      stupidly_joined_headers.split(/(?<!Expires=[A-Z][a-z][a-z]), /)
     end
   end
 end

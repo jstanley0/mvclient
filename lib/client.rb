@@ -1,10 +1,19 @@
+require 'httparty'
+require 'json'
 require_relative 'auth'
-require_relative 'request'
 
 module Motivosity
   class Client
-    def login!(username = nil, password = nil)
-      @auth = Auth.new(username, password)
+    def initialize
+      @auth = Auth.new
+    end
+
+    def login!(username, password)
+      @auth.login! username, password
+    end
+
+    def logout!
+      @auth.logout!
     end
 
     # supply a name or part of a name
@@ -15,8 +24,7 @@ module Motivosity
     #  "avatarUrl" => "user-placeholder.png",
     #  }, ...]
     def search_for_user(search_term, ignore_self = true)
-      require_auth
-      Request.do(:get, @auth, "/api/v1/usertypeahead", { name: search_term, ignoreSelf: ignore_self })
+      get "/api/v1/usertypeahead", name: search_term, ignoreSelf: ignore_self
     end
 
     # returns a list of Values
@@ -26,8 +34,7 @@ module Motivosity
     #  "description": "We aspire to create an awesome customer experience in every interaction with our product and people.",
     # ...}, ...]
     def get_values
-      require_auth
-      Request.do(:get, @auth, "/api/v1/companyvalue")
+      get "/api/v1/companyvalue"
     end
 
     # returns balances
@@ -36,54 +43,83 @@ module Motivosity
     #  "cashGiving"    : 10  # money available to give
     # }
     def get_balance
-      require_auth
-      Request.do(:get, @auth, "/api/v1/usercash")
+      get "/api/v1/usercash"
     end
 
     # sends appreciation to another User
     # raises BalanceError if insufficient funds exist
     def send_appreciation!(toUser, amount, note, company_value = nil, private = false)
-      require_auth
       options = {}
       options["companyValueID"] = company_value['id'] if company_value
       options["amount"] = amount.to_s
       options["note"] = note
       options["privateAppreciation"] = private
       options["toUserID"] = toUser['id']
-      options["toUserName"] = toUser['name']
-      Request.do(:put, @auth, "/api/v1/user/#{toUser['id']}/appreciation", {}, options)
+      options["toUserName"] = toUser['fullName']
+      put "/api/v1/user/#{toUser['id']}/appreciation", {}, options
     end
 
     # returns recent announcements
     def get_announcements(page = 0)
-      require_auth
-      Request.do(:get, @auth, "/api/v1/announcement", { pageNo: page })
+      get "/api/v1/announcement", pageNo: page
     end
 
     # returns feed
     # scope is one of :team, :extended_team, :department, or :company
     def feed(scope = :team, page = 0, comment = true)
-      require_auth
       scope_param = case scope
-                      when :team
-                        "TEAM"
-                      when :extended_team
-                        "EXTM"
-                      when :department
-                        "DEPT"
-                      when :company
-                        "CMPY"
-                      else
-                        scope.to_s
-                    end
-      Request.do(:get, @auth, "/api/v1/feed", { scope: scope_param, page: page, comment: comment })
+        when :team
+          "TEAM"
+        when :extended_team
+          "EXTM"
+        when :department
+          "DEPT"
+        when :company
+          "CMPY"
+        else
+          scope.to_s
+      end
+      get "/api/v1/feed", scope: scope_param, page: page, comment: comment
     end
 
-    private
-
-    def require_auth
-      raise UnauthorizedError.new('not logged in') unless @auth
+  private
+    class Request
+      include HTTParty
+      base_uri 'https://www.motivosity.com'
+      follow_redirects false
+      debug_output $stderr if ENV['MOTIVOSITY_DEBUG'].to_i == 1
     end
 
+    def request_options(path, url_params = {}, body = nil)
+      { headers: @auth.auth_headers.merge({'Content-Type' => 'application/json'}), query: url_params, body: body }
+    end
+
+    def get(path, url_params = {})
+      process_response(Request.get(path, request_options(path, url_params)))
+    end
+
+    def put(path, url_params = {}, form_data = {})
+      process_response(Request.put(path, request_options(path, url_params, form_data.to_json)))
+    end
+
+    def process_response(response)
+      response_body = JSON.parse(response.body)
+      if response.code != 200
+        error = case response.code
+          when 401
+            UnauthorizedError.new(response.message)
+          else
+            if response.code == 500 && response_body["type"] == "UnbalanceCashGivingBalanceException"
+              BalanceError.new("Insufficient funds")
+            else
+              Error.new(response.message)
+            end
+        end
+        error.response = response
+        error.response_body = response_body
+        raise error
+      end
+      response_body
+    end
   end
 end
