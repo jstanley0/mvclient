@@ -1,5 +1,7 @@
+#!/usr/bin/env ruby
+
 require 'optparse'
-require_relative '../mvclient'
+require_relative '../lib/mvclient'
 
 USER_ID_REGEX = /\A\h{8}-\h{4}-user-\h{4}-\h{12}\z/
 

@@ -29,10 +29,12 @@ module Motivosity
       })
       raise UnauthorizedError.new("invalid username or password") unless response.code == 302
       process_response_headers(response)
+      @cookies.cookies.length > 0
     end
 
     def logout!
       @cookies.clear
+      true
     end
 
     def auth_headers

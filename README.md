@@ -93,19 +93,19 @@ A command-line tool is also provided in `bin/mvclient.rb`.  Use `--help` to rece
 ### Log in
 
 ```
-ruby bin/mvclient.rb login -u "user@example.com" -p "correct horse battery staple"
+mvclient login -u "user@example.com" -p "correct horse battery staple"
 ```
 
 ### Log out
 
 ```
-ruby bin/mvclient.rb logout
+mvclient logout
 ```
 
 ### Get balance
 
 ```
-ruby bin/mvclient.rb get_balance
+mvclient get_balance
 ```
 Example output:
 ```
@@ -116,7 +116,7 @@ You can spend $21.00
 ### Send appreciation
 
 ```
-ruby bin/mvclient.rb send_appreciation -u "Jane Doe" -a "1.00" -n "Note" -v "Customer Experience" 
+mvclient send_appreciation -u "Jane Doe" -a "1.00" -n "Note" -v "Customer Experience" 
 ```
 The `-u` option accepts either a user ID or a name. Partial names are acceptable, but the call will fail unless exactly one name matches.
 
@@ -124,3 +124,7 @@ Example output:
 ```
 Success! Jane Doe has received your appreciation.
 ```
+
+### Debugging
+
+Set MOTIVOSITY_DEBUG=1 to enable logging of all communication with Motivosity to stderr
