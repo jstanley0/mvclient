@@ -107,7 +107,7 @@ ruby bin/mvclient.rb logout
 ```
 ruby bin/mvclient.rb get_balance
 ```
-example output
+Example output:
 ```
 You can give $7.00
 You can spend $21.00
@@ -118,7 +118,9 @@ You can spend $21.00
 ```
 ruby bin/mvclient.rb send_appreciation -u "Jane Doe" -a "1.00" -n "Note" -v "Customer Experience" 
 ```
-example output
+The `-u` option accepts either a user ID or a name. Partial names are acceptable, but the call will fail unless exactly one name matches.
+
+Example output:
 ```
 Success! Jane Doe has received your appreciation.
 ```
