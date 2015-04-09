@@ -5,6 +5,12 @@ send money, and retrieve the announcements and news feed. A limited [command-lin
 
 ## client library
 
+### Installation
+
+```
+gem install mvclient
+```
+
 ### Instantiation
 
 ```ruby
