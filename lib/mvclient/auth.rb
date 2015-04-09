@@ -2,7 +2,7 @@ require 'json'
 require 'httparty'
 require 'fileutils'
 require 'http-cookie'
-require_relative 'error'
+require 'mvclient/error'
 
 module Motivosity
   class Auth

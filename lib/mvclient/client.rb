@@ -1,6 +1,6 @@
 require 'httparty'
 require 'json'
-require_relative 'auth'
+require 'mvclient/auth'
 
 module Motivosity
   class Client
