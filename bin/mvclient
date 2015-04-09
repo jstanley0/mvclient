@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'highline/import'
 require 'optparse'
 require 'mvclient'
 
@@ -43,8 +44,12 @@ COMMANDS = {
         $options[:password] = password
       end
     end
-    require_options(:username, :password)
-    $client.login!($options[:username], $options[:password])
+    username = $options[:username]
+    username ||= ask("Enter your username: ")
+    password = $options[:password]
+    password ||= ask("Enter your password: ") { |q| q.echo = false }
+
+    $client.login!(username, password)
     nil
   },
 
