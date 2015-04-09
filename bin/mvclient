@@ -26,7 +26,7 @@ def require_options(*required_options)
   required_options.each do |opt|
     unless $options[opt] && $options[opt].length > 0
       missing = true
-      $stderr.puts "missing required parameter: #{opt.to_s}; use --help for more information"
+      $stderr.puts "missing required parameter: #{opt.to_s}; use mvclient <command> --help for more information"
     end
   end
   exit(1) if missing
@@ -142,7 +142,7 @@ COMMANDS = {
       user_id = users[0]['id']
     end
 
-    response = $client.send_appreciation! user_id, $options[:amount] || 0, $options[:note] || "", value_id, !!$options[:private]
+    response = $client.send_appreciation! user_id, amount: $options[:amount], note: $options[:note], company_value_id: value_id, private: $options[:private]
     puts response['growl']['title'] + " " + response['growl']['content']
   }
 }

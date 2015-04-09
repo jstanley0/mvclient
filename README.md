@@ -76,7 +76,7 @@ returns balance information
 ### Send appreciation
 
 ```ruby
-@client.send_appreciation! user_id, 1.00, "Here, have a dollar", value_id
+@client.send_appreciation! user_id, amount: 1.00, note: "Here, have a dollar", company_value_id: value_id, private: false
 ```
 
 ### Get announcements

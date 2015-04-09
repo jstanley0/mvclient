@@ -48,14 +48,13 @@ module Motivosity
 
     # sends appreciation to another User
     # raises BalanceError if insufficient funds exist
-    def send_appreciation!(toUser_id, amount, note, company_value_id = nil, private = false)
-      options = {}
-      options["companyValueID"] = company_value_id if company_value_id
-      options["amount"] = amount.to_s
-      options["note"] = note
-      options["privateAppreciation"] = private
-      options["toUserID"] = toUser_id
-      put "/api/v1/user/#{toUser_id}/appreciation", {}, options
+    def send_appreciation!(user_id, opts = {})
+      params = { "toUserID" => user_id }
+      params["companyValueID"] = opts[:company_value_id] if opts[:company_value_id]
+      params["amount"] = opts[:amount] if opts[:amount]
+      params["note"] = opts[:note] if opts[:note]
+      params["privateAppreciation"] = opts[:private] || false
+      put "/api/v1/user/#{user_id}/appreciation", {}, params
     end
 
     # returns recent announcements
