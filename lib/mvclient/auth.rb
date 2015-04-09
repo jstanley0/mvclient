@@ -12,7 +12,14 @@ module Motivosity
     debug_output $stderr if ENV['MOTIVOSITY_DEBUG'].to_i == 1
 
     def initialize
-      @cookies = HTTP::CookieJar.new(store: :mozilla, filename: File.expand_path("~/.motivosity-session"))
+      cookie_jar_path = File.expand_path("~/.motivosity-session")
+      # make sure to create the cookie jar as read/write to current user only
+      old_umask = File.umask(0177)
+      begin
+        @cookies = HTTP::CookieJar.new(store: :mozilla, filename: cookie_jar_path)
+      ensure
+        File.umask(old_umask)
+      end
     end
 
     def login!(username, password)
