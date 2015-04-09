@@ -3,7 +3,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |s|
   s.name        = 'mvclient'
-  s.version     = '0.0.2'
+  s.version     = '0.0.3'
   s.date        = '2015-04-09'
   s.summary     = "Motivosity API Client"
   s.description = "A minimal Motivosity API v1 wrapper for Ruby, plus a command-line tool"
