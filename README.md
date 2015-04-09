@@ -94,7 +94,7 @@ returns balance information
 <a id="command-line-tool"></a>
 ## command-line tool
 
-A command-line tool is also provided in `bin/mvclient.rb`.  Use `--help` to receive usage information on the command line.
+A command-line tool is also provided in `bin/mvclient`.  Use `--help` to receive usage information.
 
 ### Log in
 
@@ -133,4 +133,4 @@ Success! Jane Doe has received your appreciation.
 
 ### Debugging
 
-Set MOTIVOSITY_DEBUG=1 to enable logging of all communication with Motivosity to stderr
+Set `MOTIVOSITY_DEBUG=1` to enable logging of all communication with Motivosity to stderr
