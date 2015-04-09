@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
-gem 'byebug'
-gem 'httparty', '~> 0'
-gem 'http-cookie', '~> 1'
+
+gemspec
+
+gem 'byebug', platforms: [:mri_20, :mri_21, :mri_22]

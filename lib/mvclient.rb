@@ -1,1 +1,1 @@
-require_relative 'mvclient/client'
+require 'mvclient/client'

@@ -1,3 +1,6 @@
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+
 Gem::Specification.new do |s|
   s.name        = 'mvclient'
   s.version     = '0.0.2'
@@ -14,4 +17,5 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 1.9.3'
   s.add_dependency 'httparty', '~> 0'
   s.add_dependency 'http-cookie', '~> 1'
+  s.add_dependency 'highline', '~> 1.7'
 end
