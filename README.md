@@ -101,6 +101,7 @@ A command-line tool is also provided in `bin/mvclient`.  Use `--help` to receive
 ```
 mvclient login -u "user@example.com" -p "correct horse battery staple"
 ```
+If either argument is omitted, you will be prompted to enter it.
 
 ### Log out
 
